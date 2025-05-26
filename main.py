@@ -60,9 +60,17 @@ def run_agent_with_prompt(prompt: str, base_output_dir: str = "generated", model
     """
     Run the agent with the given prompt and model.
     """
-    asyncio.run(
-        main(prompt=prompt, base_output_dir=base_output_dir, model=model)
-    )
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, safe to create one
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(main(prompt=prompt, base_output_dir=base_output_dir, model=model))
+    else:
+        # Loop is already running -> create a task inside it
+        return asyncio.create_task(main(prompt=prompt, base_output_dir=base_output_dir, model=model))
+
 
 if __name__ == "__main__":
     import asyncio
