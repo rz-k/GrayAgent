@@ -56,8 +56,15 @@ async def main(prompt: str, base_output_dir: str = "generated", model: str = "gp
         save_code_to_file(base_output_dir, file_path, code)    
         logger.info(f"✅ Saved: {os.path.join(base_output_dir, file_path)}")
 
-prompt = "Create login/register page using HTML, CSS, and JavaScript."
+def run_agent_with_prompt(prompt: str, base_output_dir: str = "generated", model: str = "gpt-4"):
+    """
+    Run the agent with the given prompt and model.
+    """
+    asyncio.run(
+        main(prompt=prompt, base_output_dir=base_output_dir, model=model)
+    )
 
 if __name__ == "__main__":
     import asyncio
+    prompt = "Create login/register page using HTML, CSS, and JavaScript."
     asyncio.run(main(prompt=prompt))
