@@ -1,5 +1,5 @@
 
-from core.openai_client import client
+from openai import AsyncOpenAI
 
 
 FILE_PATH_SCHEMA = {
@@ -18,7 +18,7 @@ FILE_PATH_SCHEMA = {
     },
 }
 
-async def extract_file_paths(prompt: str, plan: str, model="gpt-4"):
+async def extract_file_paths(client: AsyncOpenAI ,prompt: str, plan: str, model="gpt-4"):
     """
     Asynchronously extracts a minimal list of required file paths for the app based on the prompt and plan.
 

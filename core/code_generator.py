@@ -1,9 +1,9 @@
 import re
-from core.openai_client import client
-from core.prompts import PROMPT
+from openai import AsyncOpenAI
+from .prompts import PROMPT
 
 
-async def generate_code_for_file(prompt: str, plan: str, file_path: str, model="gpt-4"):
+async def generate_code_for_file(client: AsyncOpenAI, prompt: str, plan: str, file_path: str, model="gpt-4"):
     """
     Asynchronously generates code for a specific file using the OpenAI chat completion API.
 

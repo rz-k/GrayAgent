@@ -1,9 +1,8 @@
-# core/planner.py
-from core.openai_client import client
-from core.prompts import PROMPT
+from .prompts import PROMPT
+from openai import AsyncOpenAI
 
 
-async def generate_plan_stream(prompt: str, model="gpt-4") -> str:
+async def generate_plan_stream(client: AsyncOpenAI, prompt: str, model="gpt-4") -> str:
     """
     Asynchronously generates a structured plan for code generation using streaming from the OpenAI API.
 
