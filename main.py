@@ -1,13 +1,19 @@
 import os
 import json
+import logging
 
 from core.planner import generate_plan_stream
 from core.file_extractor import extract_file_paths
 from core.code_generator import generate_code_for_file
 from core.file_writer import save_code_to_file
-import logging
+
+from openai import AsyncOpenAI
+from dotenv import load_dotenv
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+load_dotenv()
+
 
 
 def save_plan_to_file(plan: str):
@@ -34,24 +40,26 @@ def delete_old_files(base_output_dir: str = "generated"):
     os.system(f"rm -rf {base_output_dir}/*")
 
 async def main(prompt: str, base_output_dir: str = "generated", model: str = "gpt-4"):
+
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     delete_old_files(base_output_dir)
     logger.info(f"Delete old files in {base_output_dir}...")
 
     logger.info("\n🔧 Generating plan...\n")
     os.makedirs(base_output_dir, exist_ok=True)    
-    plan = await generate_plan_stream(prompt, model=model)
+    plan = await generate_plan_stream(client=client, prompt=prompt, model=model)
 
     save_plan_to_file(plan)
 
     logger.info("\n📁 Extracting file paths...")
-    file_json = await extract_file_paths(prompt, plan, model=model)
+    file_json = await extract_file_paths(client, prompt, plan, model=model)
     file_paths = json.loads(file_json)["files"]
     logger.info("📄 Files to generate: %s", file_paths)
 
     for file_path in file_paths:
         logger.info(f"\n✍️ Generating code for: {file_path}")
-        code = await generate_code_for_file(prompt, plan, file_path, model=model)
+        code = await generate_code_for_file(client, prompt, plan, file_path, model=model)
 
         save_code_to_file(base_output_dir, file_path, code)    
         logger.info(f"✅ Saved: {os.path.join(base_output_dir, file_path)}")
@@ -74,5 +82,7 @@ def run_agent_with_prompt(prompt: str, base_output_dir: str = "generated", model
 
 if __name__ == "__main__":
     import asyncio
-    prompt = "Create login/register page using HTML, CSS, and JavaScript."
+    prompt = input("Enter your prompt: ") or None
+    if prompt is None:
+        prompt = "Create login/register page using HTML, CSS, and JavaScript."
     asyncio.run(main(prompt=prompt))
